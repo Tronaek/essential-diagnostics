@@ -194,7 +194,15 @@ namespace Essential.Diagnostics
                             value = Environment.UserDomainName + "-" + Environment.UserName;
                             break;
                         default:
-                            value = "{" + name + "}";
+                            if (name.ToUpperInvariant().Contains("DATETIME"))
+                            {
+                                string timeZoneId = name.ToUpperInvariant().Replace("DATETIME", string.Empty).Replace("_", " ").Trim();
+                                value = TraceFormatter.FormatSpecificTimeZone(eventCache, timeZoneId);
+                            }
+                            else
+                            {
+                                value = "{" + name + "}";
+                            }
                             return true;
                     }
                     return true;

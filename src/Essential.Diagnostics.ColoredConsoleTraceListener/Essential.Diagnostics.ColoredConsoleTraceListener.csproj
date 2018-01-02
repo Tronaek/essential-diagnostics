@@ -8,8 +8,8 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Essential</RootNamespace>
-    <AssemblyName>Essential.Diagnostics.ColoredConsoleTraceListener</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <AssemblyName>external.essential.diagnostics.colored-console-trace-listener</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -53,29 +55,23 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Essential.Diagnostics.Core\Essential.Diagnostics.Core.csproj">
-      <Project>{aae26c8f-ae78-4458-ba5d-00876105a4b7}</Project>
-      <Name>Essential.Diagnostics.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Resource.ColoredConsole.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resource.ColoredConsole.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Essential.Diagnostics.ColoredConsoleTraceListener.config.transform">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Essential.Diagnostics.ColoredConsoleTraceListener.nuspec">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="Essential.Diagnostics.ColoredConsoleTraceListener.config.transform" />
+    <None Include="Essential.Diagnostics.ColoredConsoleTraceListener.nuspec" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Essential.Diagnostics.ColoredConsoleTraceListener.ReadMe.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="Essential.Diagnostics.ColoredConsoleTraceListener.ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Essential.Diagnostics.Core\Essential.Diagnostics.Core.csproj">
+      <Project>{aae26c8f-ae78-4458-ba5d-00876105a4b7}</Project>
+      <Name>Essential.Diagnostics.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

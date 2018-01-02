@@ -198,7 +198,15 @@ namespace Essential.Diagnostics
                             value = (listener == null) ? "" : listener.Name;
                             break;
                         default:
-                            value = "{" + name + "}";
+                            if (name.ToUpperInvariant().Contains("DATETIME"))
+                            {
+                                string timeZoneId = name.ToUpperInvariant().Replace("DATETIME", string.Empty).Replace("_", " ").Trim();
+                                value = TraceFormatter.FormatSpecificTimeZone(eventCache, timeZoneId);
+                            }
+                            else
+                            {
+                                value = "{" + name + "}";
+                            }
                             return true;
                     }
                     return true;
@@ -206,7 +214,7 @@ namespace Essential.Diagnostics
             return result;
         }
 
-        internal object FormatApplicationName()
+        public object FormatApplicationName()
         {
             object value;
             EnsureApplicationName();
@@ -215,7 +223,7 @@ namespace Essential.Diagnostics
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1903:UseOnlyApiFromTargetedFramework", MessageId = "System.DateTimeOffset", Justification = "Deliberate dependency, .NET 2.0 SP1 required.")]
-        internal static object FormatLocalTime(TraceEventCache eventCache)
+        public static object FormatLocalTime(TraceEventCache eventCache)
         {
             object value;
             if (eventCache == null)
@@ -231,7 +239,7 @@ namespace Essential.Diagnostics
             return value;
         }
 
-        internal object FormatProcessId(TraceEventCache eventCache)
+        public object FormatProcessId(TraceEventCache eventCache)
         {
             object value;
             if (eventCache == null)
@@ -246,7 +254,7 @@ namespace Essential.Diagnostics
             return value;
         }
 
-        internal object FormatProcessName()
+        public object FormatProcessName()
         {
             object value;
             EnsureProcessInfo();
@@ -255,7 +263,7 @@ namespace Essential.Diagnostics
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1903:UseOnlyApiFromTargetedFramework", MessageId = "System.DateTimeOffset", Justification = "Deliberate dependency, .NET 2.0 SP1 required.")]
-        internal static DateTimeOffset FormatUniversalTime(TraceEventCache eventCache)
+        public static DateTimeOffset FormatUniversalTime(TraceEventCache eventCache)
         {
             DateTimeOffset value;
             if (eventCache == null)
@@ -268,6 +276,21 @@ namespace Essential.Diagnostics
                 // (i.e. Unspecified Kind is treated as Local)
                 value = ((DateTimeOffset)eventCache.DateTime).ToUniversalTime();
             }
+            return value;
+        }
+
+        public static DateTimeOffset FormatSpecificTimeZone(TraceEventCache eventCache, string timeZoneId)
+        {
+            DateTimeOffset value;
+            if (eventCache == null)
+            {
+                value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, timeZoneId);
+            }
+            else
+            {
+                value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId((DateTimeOffset)eventCache.DateTime, timeZoneId);
+            }
+
             return value;
         }
 
