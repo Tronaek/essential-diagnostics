@@ -28,7 +28,7 @@ namespace Essential.Diagnostics
     /// </para>
     /// </remarks>
     public class RollingFileTraceListener : TraceListenerBase
-	{
+    {
         // Default format matches Microsoft.VisualBasic.Logging.FileLogTraceListener
         private const string _defaultFilePathTemplate = "{ApplicationName}-{DateTime:yyyy-MM-dd}.log";
         // Default format matches Microsoft.VisualBasic.Logging.FileLogTraceListener
@@ -74,19 +74,17 @@ namespace Essential.Diagnostics
         /// use "{ApplicationName}-{LocalDateTime:yyyy-MM-dd}.log".
         /// </para>
         /// </remarks>
+
         public RollingFileTraceListener(string filePathTemplate)
         {
-            if (string.IsNullOrEmpty(filePathTemplate))
-            {
-                rollingTextWriter = new RollingTextWriter(_defaultFilePathTemplate);
-            }
-            else
-            {
-                rollingTextWriter = RollingTextWriter.Create(filePathTemplate);
-            }
+            rollingTextWriter = RollingTextWriter.Create(filePathTemplate, filePathTemplate);
         }
 
-        
+        public RollingFileTraceListener(string filePathTemplate, string rollingPathTemplate)
+        {
+            rollingTextWriter = RollingTextWriter.Create(filePathTemplate, rollingPathTemplate);
+        }
+
 
         /// <summary>
         /// Gets or sets whether calls to the Trace class static Write and WriteLine methods should be converted to Verbose events,
@@ -281,5 +279,5 @@ namespace Essential.Diagnostics
             base.Dispose(disposing);
         }
 
-	}
+    }
 }

@@ -11,25 +11,36 @@ namespace Essential.Diagnostics
         const int _maxStreamRetries = 5;
 
         private string _currentPath;
+        private string _rollingPath;
         private TextWriter _currentWriter;
         private object _fileLock = new object();
-        private string _filePathTemplate;
+        private string _currentPathTemplate;
+        private string _rollingPathTemplate;
         private IFileSystem _fileSystem = new FileSystem();
         TraceFormatter traceFormatter = new TraceFormatter();
 
-        public RollingTextWriter(string filePathTemplate)
+        public RollingTextWriter(string currentPathTemplate, string rollingPathTemplate)
         {
-            _filePathTemplate = filePathTemplate;
+            _currentPathTemplate = currentPathTemplate;
+            _rollingPathTemplate = rollingPathTemplate;
         }
 
         /// <summary>
-        /// Create RollingTextWriter with filePathTemplate which might contain 1 environment variable in front.
+        /// Create RollingTextWriter with rollingPathTemplate which might contain 1 environment variable in front.
         /// </summary>
-        /// <param name="filePathTemplate"></param>
+        /// <param name="currentPathTemplate"></param>
+        /// <param name="rollingPathTemplate"></param>
         /// <returns></returns>
-        public static RollingTextWriter Create(string filePathTemplate)
+        public static RollingTextWriter Create(string currentPathTemplate, string rollingPathTemplate)
         {
-            var segments = filePathTemplate.Split('%');
+            return new RollingTextWriter(
+                GetTemplatePathWithEnvironmentVariables(currentPathTemplate),
+                GetTemplatePathWithEnvironmentVariables(rollingPathTemplate));
+        }
+
+        private static string GetTemplatePathWithEnvironmentVariables(string path)
+        {
+            var segments = path.Split('%');
             if (segments.Length > 3)
             {
                 throw new ArgumentException("InitializeData should contain maximum 1 environment variable.", "filePathTemplate");
@@ -40,8 +51,10 @@ namespace Essential.Diagnostics
                 var rootFolder = Environment.GetEnvironmentVariable(variableName);
                 if (String.IsNullOrEmpty(rootFolder))
                 {
-                    if (variableName.Equals("ProgramData", StringComparison.CurrentCultureIgnoreCase) && (Environment.OSVersion.Version.Major <= 5))//XP or below: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832%28v=vs.85%29.aspx
-                    {//So the host program could run well in XP and Windows 7 without changing the config file.
+                    if (variableName.Equals("ProgramData", StringComparison.CurrentCultureIgnoreCase)
+                        && (Environment.OSVersion.Version.Major <= 5)) // XP or below: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832%28v=vs.85%29.aspx
+                    {
+                        // So the host program could run well in XP and Windows 7 without changing the config file.
                         rootFolder = Path.Combine(Environment.GetEnvironmentVariable("AllUsersProfile"), "Application Data");
                     }
                     else
@@ -49,17 +62,18 @@ namespace Essential.Diagnostics
                         throw new ArgumentException("Environment variable is not recognized in InitializeData.", "filePathTemplate");
                     }
                 }
-                var filePath = rootFolder + segments[2];
-                return new RollingTextWriter(filePath);
+                var expandedPath = rootFolder + segments[2];
+                return expandedPath;
             }
-
-            return new RollingTextWriter(filePathTemplate);
-
+            else
+            {
+                return path;
+            }
         }
 
         public string FilePathTemplate
         {
-            get { return _filePathTemplate; }
+            get { return _rollingPathTemplate; }
         }
 
         public IFileSystem FileSystem
@@ -87,78 +101,98 @@ namespace Essential.Diagnostics
 
         public void Write(TraceEventCache eventCache, string value)
         {
-            string filePath = GetCurrentFilePath(eventCache);
+            string rollingPath = GetExpandedPath(eventCache, FilePathTemplate);
             lock (_fileLock)
             {
-                EnsureCurrentWriter(filePath);
+                EnsureCurrentWriter(eventCache, rollingPath);
                 _currentWriter.Write(value);
             }
         }
 
         public void WriteLine(TraceEventCache eventCache, string value)
         {
-            string filePath = GetCurrentFilePath(eventCache);
+            string rollingPath = GetExpandedPath(eventCache, FilePathTemplate);
             lock (_fileLock)
             {
-                EnsureCurrentWriter(filePath);
+                EnsureCurrentWriter(eventCache, rollingPath);
                 _currentWriter.WriteLine(value);
             }
         }
 
-        private void EnsureCurrentWriter(string path)
+        private string RetryOperation(string path, Action<string> operation)
+        {
+            string retryPath = path;
+            int retries = 0;
+            Exception exception;
+            do
+            {
+                retryPath = retries > 0 ? GetRetryPath(retryPath, retries) : retryPath;
+
+                try
+                {
+                    operation(retryPath);
+                    exception = null;
+                }
+                catch (IOException ex)
+                {
+                    exception = ex;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+            while (exception != null && ++retries < _maxStreamRetries);
+
+            if (exception != null)
+            {
+                throw new InvalidOperationException(Resource_RollingFile.RollingTextWriter_ExhaustedLogfileNames, exception);
+            }
+
+            return retryPath;
+        }
+
+        private void EnsureCurrentWriter(TraceEventCache eventCache, string rollingPath)
         {
             // NOTE: This is called inside lock(_fileLock)
-            if (_currentPath != path)
+            if (_currentWriter == null ||
+                !string.Equals(_rollingPath, rollingPath, StringComparison.CurrentCultureIgnoreCase))
             {
                 if (_currentWriter != null)
                 {
+                    _currentWriter.Flush();
                     _currentWriter.Close();
                     _currentWriter.Dispose();
                     _currentWriter = null;
-                    _currentPath = null;
                 }
 
-                var num = 0;
-                var stream = default(Stream);
-
-                while (stream == null && num < _maxStreamRetries)
+                if (!string.IsNullOrEmpty(_currentPath) &&
+                    !string.IsNullOrEmpty(_rollingPath) &&
+                    !string.Equals(_currentPath, _rollingPath, StringComparison.CurrentCultureIgnoreCase))
                 {
-                    var fullPath = num == 0 ? path : getFullPath(path, num);
-                    try
-                    {
-                        stream = FileSystem.Open(fullPath, FileMode.Append, FileAccess.Write, FileShare.Read);
-
-                        this._currentWriter = new StreamWriter(stream);
-                        this._currentPath = path;
-
-                        return;
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        throw;
-                    }
-                    catch (IOException)
-                    {
-
-                    }
-                    num++;
+                    RetryOperation(_rollingPath, (path) => File.Move(_currentPath, path));
                 }
 
-                throw new InvalidOperationException(Resource_RollingFile.RollingTextWriter_ExhaustedLogfileNames);
+                Stream stream = default(Stream);
+                this._currentPath = RetryOperation(
+                    GetExpandedPath(eventCache, _currentPathTemplate),
+                    (path) => stream = FileSystem.Open(path, FileMode.Append, FileAccess.Write, FileShare.Read));
+                this._currentWriter = new StreamWriter(stream);
+                this._rollingPath = rollingPath;
             }
         }
 
-        static string getFullPath(string path, int num)
+        static string GetRetryPath(string path, int num)
         {
             var extension = Path.GetExtension(path);
             return path.Insert(path.Length - extension.Length, "-" + num.ToString(CultureInfo.InvariantCulture));
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1903:UseOnlyApiFromTargetedFramework", MessageId = "System.DateTimeOffset", Justification = "Deliberate dependency, .NET 2.0 SP1 required.")]
-        private string GetCurrentFilePath(TraceEventCache eventCache)
+        private string GetExpandedPath(TraceEventCache eventCache, string pathTemplate)
         {
-            var result = StringTemplate.Format(CultureInfo.CurrentCulture, FilePathTemplate,
-                delegate(string name, out object value)
+            var result = StringTemplate.Format(CultureInfo.CurrentCulture, pathTemplate,
+                delegate (string name, out object value)
                 {
                     switch (name.ToUpperInvariant())
                     {
