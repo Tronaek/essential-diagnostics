@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
+﻿using Microsoft.CSharp;
+using System;
 using System.CodeDom.Compiler;
-using Microsoft.CSharp;
-using System.Reflection;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 
 namespace Essential.Diagnostics
 {
@@ -56,7 +54,7 @@ namespace Essential.Diagnostics
             var eventCache = cache ?? new TraceEventCache();
             var dateTimeOffset = (DateTimeOffset)eventCache.DateTime;
             // Note: eventCache is *not* in the publically documented API
-            return compiledExpression.ShouldTrace(eventCache, source, eventType, id, formatOrMessage, eventCache.Callstack, 
+            return compiledExpression.ShouldTrace(eventCache, source, eventType, id, formatOrMessage, eventCache.Callstack,
                 dateTimeOffset, eventCache.LogicalOperationStack, eventCache.ProcessId, eventCache.ThreadId, eventCache.Timestamp);
         }
 
@@ -99,7 +97,7 @@ namespace Essential.Diagnostics
                 }
                 throw new ArgumentException(message.ToString());
             }
-        
+
             var assembly = results.CompiledAssembly;
             var dynamicType = assembly.GetType("Essential.Diagnostics.Dynamic." + className);
             return (ExpressionBase)Activator.CreateInstance(dynamicType);

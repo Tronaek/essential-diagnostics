@@ -13,7 +13,7 @@ namespace Essential.Diagnostics
     public class TraceConfigurationMonitor : IDisposable
     {
         private FileSystemWatcher watcher;
-             
+
         /// <summary>
         /// Constructor. Monitors the configuration file based on the entry assembly.
         /// </summary>
@@ -26,7 +26,7 @@ namespace Essential.Diagnostics
         /// Constructor. Monitors the specified file (monitoring enabled).
         /// </summary>
         public TraceConfigurationMonitor(string configFilePath)
-            : this (configFilePath, true)
+            : this(configFilePath, true)
         {
         }
 
@@ -38,7 +38,7 @@ namespace Essential.Diagnostics
         public TraceConfigurationMonitor(string configFilePath, bool enabled)
         {
             if (configFilePath == null) throw new ArgumentNullException("configFilePath");
-//            Console.WriteLine("** config: {0} **", configFilePath);
+            //            Console.WriteLine("** config: {0} **", configFilePath);
 
             var path = Path.GetDirectoryName(configFilePath);
             var fileName = Path.GetFileName(configFilePath);
@@ -99,7 +99,7 @@ namespace Essential.Diagnostics
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         private void watcher_Changed(object sender, FileSystemEventArgs e)
         {
-//            Console.WriteLine("** watcher_Changed fired **");
+            //            Console.WriteLine("** watcher_Changed fired **");
             int retryCount = 0;
             while (retryCount < 3)
             {

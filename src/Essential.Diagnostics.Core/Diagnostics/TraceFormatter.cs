@@ -94,12 +94,12 @@ namespace Essential.Diagnostics
         /// </para>
         /// </remarks>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1903:UseOnlyApiFromTargetedFramework", MessageId = "System.DateTimeOffset", Justification = "Deliberate dependency, .NET 2.0 SP1 required.")]
-        public string Format(string template, TraceListener listener, TraceEventCache eventCache, 
-            string source, TraceEventType eventType, int id, string message, 
+        public string Format(string template, TraceListener listener, TraceEventCache eventCache,
+            string source, TraceEventType eventType, int id, string message,
             Guid? relatedActivityId, object[] data)
         {
             var result = StringTemplate.Format(CultureInfo.CurrentCulture, template,
-                delegate(string name, out object value)
+                delegate (string name, out object value)
                 {
                     switch (name.ToUpperInvariant())
                     {

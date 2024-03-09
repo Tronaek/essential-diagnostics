@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Essential.IO;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Essential.IO;
 
 namespace Essential.Diagnostics
 {
@@ -33,9 +33,9 @@ namespace Essential.Diagnostics
         private const string _defaultFilePathTemplate = "{ApplicationName}-{DateTime:yyyy-MM-dd}.log";
         // Default format matches Microsoft.VisualBasic.Logging.FileLogTraceListener
         private const string _defaultTemplate = "{DateTime:u} [{Thread}] {EventType} {Source} {Id}: {Message}{Data}";
-        private static string[] _supportedAttributes = new string[] 
-            { 
-                "template", "Template", 
+        private static string[] _supportedAttributes = new string[]
+            {
+                "template", "Template",
                 "convertWriteToEvent", "ConvertWriteToEvent",
             };
         TraceFormatter traceFormatter = new TraceFormatter();

@@ -1,8 +1,8 @@
 ﻿using Essential.Collections;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Collections;
 
 namespace Essential.Diagnostics
 {
@@ -122,7 +122,8 @@ namespace Essential.Diagnostics
             }
         }
 
-        public Exception Exception {
+        public Exception Exception
+        {
             get
             {
                 if (_exception == null)
@@ -142,7 +143,8 @@ namespace Essential.Diagnostics
             }
         }
 
-        public string MessageTemplate {
+        public string MessageTemplate
+        {
             get
             {
                 EnsureMessageTemplate();
@@ -290,7 +292,7 @@ namespace Essential.Diagnostics
                     {
                         if (index < _messageTemplateKeys.Count)
                         {
-                            ((IDictionary<string,object>)allProperties)[_messageTemplateKeys[index]] = _templateValues[index];
+                            ((IDictionary<string, object>)allProperties)[_messageTemplateKeys[index]] = _templateValues[index];
                         }
                         else
                         {
