@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{790A6ADB-4332-4E36-A86E-95373F44BCE6}"
 	ProjectSection(SolutionItems) = preProject
@@ -448,6 +448,9 @@ Global
 		{00DF3CAA-461F-422F-A739-52770436ED80} = {A7E69AF9-D207-44DF-8294-823024B90590}
 		{B9917D64-76EC-4322-8A86-611FE10BACEF} = {A7E69AF9-D207-44DF-8294-823024B90590}
 		{CE62C10E-0EF9-4834-BC46-5398D2C607E8} = {A7E69AF9-D207-44DF-8294-823024B90590}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {38D6B631-0E6F-4451-A557-14B91126CAA5}
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = EssentialDiagnostics.vsmdi
