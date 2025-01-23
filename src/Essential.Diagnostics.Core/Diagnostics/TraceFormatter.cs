@@ -129,7 +129,7 @@ namespace Essential.Diagnostics
                             value = FormatThreadId(eventCache);
                             break;
                         case "THREAD":
-                            value = Thread.CurrentThread.Name ?? FormatThreadId(eventCache);
+                            value = $"{Thread.CurrentThread.Name ?? FormatThreadId(eventCache)}".PadRight(16);
                             break;
                         case "THREADNAME":
                             value = Thread.CurrentThread.Name;
